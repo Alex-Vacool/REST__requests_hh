@@ -1,14 +1,32 @@
-from pprint import pprint
-from requests import get
-from json import dump as jdump
+from flask import Flask, render_template, request
 
-url = 'https://api.hh.ru/vacancies'
-params = {'text': 'python'}
-res = get(url, params=params).json()
-print(res['found'])
-pprint(res['items'])
+from hh_json import parce
 
-# сохранение файла с результами работы
-with open('res.json', mode='w') as f:
-    jdump([res], f)
+# объявление главной переменной
+app = Flask(__name__)
 
+
+# вывод (редеринг) главной страницы
+@app.get('/index')
+@app.get('/')
+def index():
+    return render_template('index.html')
+
+
+# вывод страницы формы
+@app.route('/form/')
+def form():
+    return render_template('form.html')
+
+
+@app.post('/result/')
+def result():
+    """
+    Вывод результата обработки запроса
+    :return: страница с результатами
+    """
+    vac = request.form
+    data = parce(**vac)
+    dat = {**data, **vac}  # data | vac - в Python 3.10 можно сделать так
+    print(dat)
+    return render_template('about.html', res=dat)
